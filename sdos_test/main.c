@@ -15,6 +15,28 @@ struct input {
 int main() {
     int n_items;
     char **items;
+
+    write_int("demo_value", 69);
+    int demo_arr[] = {1, 2, 3, 4, 5};
+    write_int_array("demo_arr", 5, demo_arr);
+
+    int id_length;
+    char* id;
+    persist_entry("writing_demo", true, &id, &id_length);
+
+    collection_entries("writing_demo", &n_items, &items);
+
+    for (int i = 0; i < n_items; ++i) {
+        load_entry("writing_demo", items[i], true);
+        printf("%s\n", items[i]);
+    }
+
+    return 0;
+}
+
+int main_old() {
+    int n_items;
+    char **items;
     collection_entries("mapping_instances", &n_items, &items);
 
     for (int i = 0; i < n_items; ++i) {

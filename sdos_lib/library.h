@@ -67,8 +67,8 @@ void extract_string_array(const char *param, int *arr_length, char ***arr);
 // # From here on, the data write methods follow #
 // ###############################################
 
-void write_int(const char *param, int value);
-void write_int_array(const char *param, int arr_length, int *arr);
+void write_int(const char *key, int value);
+void write_int_array(const char *key, int arr_length, int *arr);
 
 
 #endif //SDOS_LIB_LIBRARY_H

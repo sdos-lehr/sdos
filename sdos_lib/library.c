@@ -330,15 +330,23 @@ void extract_string_array(const char *param, int *arr_length, char ***arr) {
 // # From here on, the data write methods follow #
 // ###############################################
 
-void write_int(const char *param, int value) {
+void init_object() {
     if (object_to_persist == NULL) {
         object_to_persist = json_object_new_object();
     }
-
 }
 
-void write_int_array(const char *param, int arr_length, int *arr) {
-    if (object_to_persist == NULL) {
-        object_to_persist = json_object_new_object();
+void write_int(const char *key, int value) {
+    init_object();
+    json_object_object_add(object_to_persist, key, json_object_new_int(value));
+}
+
+void write_int_array(const char *key, int arr_length, int *arr) {
+    init_object();
+    json_object* arr_obj = json_object_new_array_ext(arr_length);
+    for (int i = 0; i < arr_length; ++i) {
+        json_object* elem_obj = json_object_new_int(arr[i]);
+        json_object_array_put_idx(arr_obj, i, elem_obj);
     }
+    json_object_object_add(object_to_persist, key, arr_obj);
 }
