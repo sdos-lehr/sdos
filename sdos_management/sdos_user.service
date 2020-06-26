@@ -1,0 +1,10 @@
+[Unit]
+Description=SDOS management server
+
+[Service]
+ExecStart=python3 app.py
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
