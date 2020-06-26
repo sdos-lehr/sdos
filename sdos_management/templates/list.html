@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <ul>
+        {% for id in list %}
+        <li><a href="{{ url_for('render_list') + '?collection=' + col + '&id=' + id}}">{{ id }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
