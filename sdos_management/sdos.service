@@ -2,7 +2,7 @@
 Description=SDOS management server
 
 [Service]
-ExecStart=python3 app.py
+ExecStart=/usr/share/sdos/venv/bin/python3.8 /usr/share/sdos/app.py
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 

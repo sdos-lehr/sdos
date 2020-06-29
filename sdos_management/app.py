@@ -19,7 +19,7 @@ def get_config():
     global config
     if config is None:
         parser = configparser.ConfigParser()
-        parser.read('config.ini')
+        parser.read('/usr/share/sdos/config.ini')
         defaults = parser['DEFAULT']
         config = {
             'require_auth': defaults.getboolean('RequireAuth'),
