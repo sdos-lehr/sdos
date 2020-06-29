@@ -18,6 +18,11 @@ mkdir "$BASE/$NAME/etc"
 mkdir "$BASE/$NAME/etc/systemd"
 mkdir "$BASE/$NAME/etc/systemd/system"
 
+# create library folder structure
+mkdir "$BASE/$NAME/usr/lib"
+mkdir "$BASE/$NAME/usr/include"
+
+# copy management application
 cp -r "$BASE/static" "$TARGET"
 cp -r "$BASE/templates" "$TARGET"
 cp -r "$BASE/venv" "$TARGET"
@@ -27,7 +32,12 @@ cp "$BASE/setup.py" "$TARGET"
 cp "$BASE/config.ini" "$TARGET"
 cp "$BASE/README.md" "$TARGET"
 
+# copy service file
 cp "$BASE/sdos.service" "$BASE/$NAME/etc/systemd/system"
+
+# copy c library
+cp "$BASE/../sdos_c_lib/sdos.h" "$BASE/$NAME/usr/include"
+cp "$BASE/../sdos_c_lib/cmake-build-debug/libsdos.so" "$BASE/$NAME/usr/lib"
 
 # Write .deb file metadata
 printf "Package: $PROG\n" >> "$BASE/$NAME/DEBIAN/control"

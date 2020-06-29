@@ -1,4 +1,4 @@
-#include <library.h>
+#include <sdos.h>
 #include <stdio.h>
 
 struct input {

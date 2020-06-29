@@ -1,5 +1,5 @@
-#ifndef SDOS_LIB_LIBRARY_H
-#define SDOS_LIB_LIBRARY_H
+#ifndef SDOS_LIB_SDOS_H
+#define SDOS_LIB_SDOS_H
 
 #include <stdbool.h>
 #include <json-c/json.h>
@@ -71,4 +71,4 @@ void write_int(const char *key, int value);
 void write_int_array(const char *key, int arr_length, int *arr);
 
 
-#endif //SDOS_LIB_LIBRARY_H
+#endif //SDOS_LIB_SDOS_H
