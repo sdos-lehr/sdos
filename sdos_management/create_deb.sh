@@ -3,6 +3,11 @@ VER="0.0-1"
 NAME="${PROG}_$VER"
 BASE=$(dirname "$SCRIPT")
 TARGET="$BASE/$NAME/usr/share/sdos"
+
+# compile the python application
+pyinstaller --hidden-import flask --noconsole --onefile -w -F app.py
+staticx dist/app dist/static-app
+
 # shellcheck disable=SC2115
 rm -r "$BASE/$NAME"
 mkdir "$BASE/$NAME"
@@ -12,6 +17,7 @@ mkdir "$BASE/$NAME/DEBIAN"
 mkdir "$BASE/$NAME/usr"
 mkdir "$BASE/$NAME/usr/share"
 mkdir "$TARGET"
+mkdir "$TARGET/storage"
 
 # create service folder structure
 mkdir "$BASE/$NAME/etc"
@@ -25,10 +31,7 @@ mkdir "$BASE/$NAME/usr/include"
 # copy management application
 cp -r "$BASE/static" "$TARGET"
 cp -r "$BASE/templates" "$TARGET"
-cp -r "$BASE/venv" "$TARGET"
-cp "$BASE/app.py" "$TARGET"
-cp "$BASE/persistence.py" "$TARGET"
-cp "$BASE/setup.py" "$TARGET"
+cp "$BASE/dist/static-app" "$TARGET/sdos-management"
 cp "$BASE/config.ini" "$TARGET"
 cp "$BASE/README.md" "$TARGET"
 

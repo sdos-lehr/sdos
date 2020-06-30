@@ -1,12 +1,11 @@
+import ast
 import configparser
 import json
-import sys
 import traceback
-import ast
+import urllib.request
+from typing import Optional
 
 from flask import Flask, request, render_template
-from pip._vendor import requests
-import urllib.request
 
 import persistence
 
@@ -31,22 +30,23 @@ def get_config():
     return config
 
 
+def get_param(param: str) -> Optional:
+    data = request.args
+    if param in data:
+        return data[param]
+    return None
+
+
 def get_collection_name():
-    backup = None
-    if 'collection' in get_data():
-        backup = get_data()['collection']
-    return request.values.get('collection', request.values.get('col', request.values.get('c', backup)))
+    return get_param('collection')
 
 
-def get_id():
-    backup = None
-    if 'id' in get_data():
-        backup = get_data()['id']
-    return request.values.get('data_id', request.values.get('id', backup))
+def get_id() -> Optional[str]:
+    return get_param('id')
 
 
-def get_load_data():
-    return request.values.get('load_data', False)
+def get_load_data() -> Optional[bool]:
+    return get_param('load_data')
 
 
 def get_headers() -> dict:
@@ -69,7 +69,7 @@ def get_url(number=0) -> str:
         url += conf['cloud_url']
     else:
         url += conf['management_ip']
-    url += ':5000/manage'
+    url += ':5006/manage'
     params = dict(request.values)
     entries = []
     for key, val in params.items():
@@ -81,9 +81,11 @@ def get_url(number=0) -> str:
 @app.route('/', methods=['POST', 'PUT', 'GET'])
 def invoke():
     print('called invoke with ' + request.method)
+    print('called invoke on ' + request.url)
     for try_num in range(3):
         try:
-            req = urllib.request.Request(url=get_url(try_num), method=request.method, data=request.data, headers=get_headers())
+            req = urllib.request.Request(url=get_url(try_num), method=request.method, data=request.data,
+                                         headers=get_headers())
             resp = urllib.request.urlopen(req)
             resp_string = resp.read().decode("utf-8")
             return resp_string
@@ -115,11 +117,15 @@ def manage_persist():
 @app.route('/manage', methods=['GET'])
 def manage_query():
     print('called manage')
-    if get_load_data() or get_id() is not None:
+    data_id = get_id()
+    print('id: ', data_id)
+    if get_load_data() or data_id is not None:
+        print('loading entry by id')
         return pers.retrieve(get_collection_name(), data_id=get_id())
     else:
+        print('loading list')
         return pers.retrieve_list(get_collection_name())
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5006)

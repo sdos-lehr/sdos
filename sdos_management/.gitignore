@@ -239,3 +239,4 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,flask
 /storage/
 /sdos_*/
+/venv_3_8/

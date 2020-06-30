@@ -125,7 +125,8 @@ CURLcode curl_fetch_url(CURL *ch, const char *url, struct curl_fetch_st *fetch) 
     return rcode;
 }
 
-json_object *send_request(const char *method, const char *data, bool print_debug) {
+json_object *
+send_request(const char *method, const char *data, bool print_debug, const char *collection, const char *id) {
     CURL *ch;                                               /* curl handle */
     CURLcode rcode;                                         /* curl result code */
 
@@ -136,8 +137,9 @@ json_object *send_request(const char *method, const char *data, bool print_debug
     struct curl_fetch_st *cf = &curl_fetch;                 /* pointer to fetch struct */
     struct curl_slist *headers = NULL;                      /* http headers to send with request */
     const char *url = "http://localhost";
-    int port = 5000;
-
+    int port = 5006;
+    const int size = sizeof(char) * 500;
+    char *concat_url = malloc(size);
     /* init curl handle */
     if ((ch = curl_easy_init()) == NULL) {
         /* log error */
@@ -145,6 +147,20 @@ json_object *send_request(const char *method, const char *data, bool print_debug
         /* return error */
         return NULL;
     }
+
+    char *encoded_collection = curl_easy_escape(ch, collection, strlen(collection));
+    char *encoded_id;
+    concat_url[0] = '\0';
+    strcat(concat_url, url);
+    strcat(concat_url, "?collection=");
+    strcat(concat_url, encoded_collection);
+    if (id != NULL) {
+        encoded_id = curl_easy_escape(ch, id, strlen(id));
+        strcat(concat_url, "&id=");
+        strcat(concat_url, encoded_id);
+    }
+    printf("url:\n");
+    printf("%s\n", concat_url);
 
     /* set content type */
     headers = curl_slist_append(headers, "Accept: application/json");
@@ -157,7 +173,7 @@ json_object *send_request(const char *method, const char *data, bool print_debug
     curl_easy_setopt(ch, CURLOPT_PORT, port);
 
     /* fetch page and capture return code */
-    rcode = curl_fetch_url(ch, url, cf);
+    rcode = curl_fetch_url(ch, concat_url, cf);
 
     /* cleanup curl handle */
     curl_easy_cleanup(ch);
@@ -169,7 +185,7 @@ json_object *send_request(const char *method, const char *data, bool print_debug
     if (rcode != CURLE_OK || cf->size < 1) {
         /* log error */
         fprintf(stderr, "ERROR: Failed to fetch url (%s) - curl said: %s",
-                url, curl_easy_strerror(rcode));
+                concat_url, curl_easy_strerror(rcode));
         /* return error */
         return NULL;
     }
@@ -203,6 +219,12 @@ json_object *send_request(const char *method, const char *data, bool print_debug
         return NULL;
     }
 
+
+    curl_free(encoded_collection);
+    if (id != NULL) {
+        curl_free(encoded_id);
+    }
+
     return json;
 }
 
@@ -211,9 +233,8 @@ int collection_entries(const char *collection, int *n_items, char ***ids) {
     /* create json object for post */
     json = json_object_new_object();
 
-    /* build post data */
-    json_object_object_add(json, "collection", json_object_new_string(collection));
-    json = send_request("GET", json_object_to_json_string(json), false);
+    /* build get data */
+    json = send_request("GET", json_object_to_json_string(json), false, collection, NULL);
 
     id_arr = json_object_object_get(json, "ids");
     n_items[0] = json_object_array_length(id_arr);
@@ -230,15 +251,24 @@ int collection_entries(const char *collection, int *n_items, char ***ids) {
     return 0;
 }
 
+int collection_entries_from_environment(int *n_items, char ***ids) {
+    return collection_entries(getenv("SDOS_COLLECTION"), n_items, ids);
+}
+
 json_object *load_entry(const char *collection, const char *id, bool print_debug) {
     json_object_put(cached_object);
     cached_object = json_object_new_object();
 
     /* build post data */
-    json_object_object_add(cached_object, "collection", json_object_new_string(collection));
-    json_object_object_add(cached_object, "id", json_object_new_string(id));
-    cached_object = send_request("GET", json_object_to_json_string(cached_object), print_debug);
+    cached_object = send_request("GET", json_object_to_json_string(cached_object), print_debug, collection, id);
     return cached_object;
+}
+
+json_object *load_entry_from_environment() {
+    return load_entry(
+            getenv("SDOS_COLLECTION"),
+            getenv("SDOS_ID"),
+            false);
 }
 
 int extract_int(const char *param) {
@@ -253,8 +283,7 @@ void persist_entry(const char *collection, bool print_debug, char **generated_id
     }
 
     /* build post data */
-    json_object_object_add(object_to_persist, "collection", json_object_new_string(collection));
-    cached_object = send_request("POST", json_object_to_json_string(object_to_persist), print_debug);
+    cached_object = send_request("POST", json_object_to_json_string(object_to_persist), print_debug, collection, NULL);
 }
 
 // ################################################
@@ -343,10 +372,60 @@ void write_int(const char *key, int value) {
 
 void write_int_array(const char *key, int arr_length, int *arr) {
     init_object();
-    json_object* arr_obj = json_object_new_array_ext(arr_length);
+    json_object *arr_obj = json_object_new_array_ext(arr_length);
     for (int i = 0; i < arr_length; ++i) {
-        json_object* elem_obj = json_object_new_int(arr[i]);
+        json_object *elem_obj = json_object_new_int(arr[i]);
         json_object_array_put_idx(arr_obj, i, elem_obj);
     }
     json_object_object_add(object_to_persist, key, arr_obj);
+}
+
+void write_long(const char *key, int64_t value) {
+    init_object();
+    json_object_object_add(object_to_persist, key, json_object_new_int64(value));
+}
+
+void write_long_array(const char *key, int arr_length, int64_t *arr) {
+    init_object();
+    json_object *arr_obj = json_object_new_array_ext(arr_length);
+    for (int i = 0; i < arr_length; ++i) {
+        json_object *elem_obj = json_object_new_int64(arr[i]);
+        json_object_array_put_idx(arr_obj, i, elem_obj);
+    }
+    json_object_object_add(object_to_persist, key, arr_obj);
+}
+
+void write_double(const char *key, double value) {
+    init_object();
+    json_object_object_add(object_to_persist, key, json_object_new_double(value));
+}
+
+void write_double_array(const char *key, int arr_length, double *arr) {
+    init_object();
+    json_object *arr_obj = json_object_new_array_ext(arr_length);
+    for (int i = 0; i < arr_length; ++i) {
+        json_object *elem_obj = json_object_new_double(arr[i]);
+        json_object_array_put_idx(arr_obj, i, elem_obj);
+    }
+    json_object_object_add(object_to_persist, key, arr_obj);
+}
+
+void write_string(const char *key, char *value) {
+    init_object();
+    json_object_object_add(object_to_persist, key, json_object_new_string(value));
+}
+
+void write_string_array(const char *key, int arr_length, char **arr) {
+    init_object();
+    json_object *arr_obj = json_object_new_array_ext(arr_length);
+    for (int i = 0; i < arr_length; ++i) {
+        json_object *elem_obj = json_object_new_string(arr[i]);
+        json_object_array_put_idx(arr_obj, i, elem_obj);
+    }
+    json_object_object_add(object_to_persist, key, arr_obj);
+}
+
+void write_custom_json(const char *key, json_object *obj) {
+    init_object();
+    json_object_object_add(object_to_persist, key, obj);
 }

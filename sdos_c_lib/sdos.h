@@ -14,7 +14,7 @@
 int collection_entries(const char *collection, int *n_items, char ***ids);
 
 /**
- * TODO same as collection_entries(...), but instead of explicitly passing the collection name,
+ * same as collection_entries(...), but instead of explicitly passing the collection name,
  * it is read from the environment variables
  */
 int collection_entries_from_environment(int *n_items, char ***ids);
@@ -29,7 +29,7 @@ int collection_entries_from_environment(int *n_items, char ***ids);
 json_object *load_entry(const char *collection, const char *id, bool print_debug);
 
 /**
- * TODO same as load_entry(...), but reads all parameters from the environment variables
+ * same as load_entry(...), but reads all parameters from the environment variables
  */
 json_object *load_entry_from_environment();
 
@@ -68,7 +68,21 @@ void extract_string_array(const char *param, int *arr_length, char ***arr);
 // ###############################################
 
 void write_int(const char *key, int value);
+
 void write_int_array(const char *key, int arr_length, int *arr);
 
+void write_long(const char *key, int64_t value);
+
+void write_long_array(const char *key, int arr_length, int64_t *arr);
+
+void write_double(const char *key, double value);
+
+void write_double_array(const char *key, int arr_length, double *arr);
+
+void write_string(const char *key, char *value);
+
+void write_string_array(const char *key, int arr_length, char **arr);
+
+void write_custom_json(const char *key, json_object *obj);
 
 #endif //SDOS_LIB_SDOS_H

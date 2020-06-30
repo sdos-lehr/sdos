@@ -6,7 +6,25 @@ It **is not** an alternative implementation of a file system.
 It **is** a proposal for a standardized API using existing technologies.
 
 ## Installation
-TODO - if you find this project now, don't use it yet. I just started this week.
+
+SDOS should allow users to transfer data between them.
+Therefore we recommend installing sdos not user-wise, but once per system.
+To guarantee interoperability, we also recommend installing the libraries system-wide.
+
+Our provided HTTP server is a flask server, written in python 3. It can be found under `sdos_management/app.py`.
+
+The directories `sdos_c_lib` and `sdos_python_lib` contain the source code for the C and Python library respectively. 
+
+Running the management server requires flask to be installed and building the C library requires `json-c` and `curl` to be installed.
+
+#### Installation via dpkg
+
+We also provide a `.deb` file, which creates a virtual python environment for the management server and runs it as a systemd service named sdos.service.
+
+It also adds the sdos library to `/usr/lib` (header in `/usr/include`) for easy use and linking in C.
+
+Download the .deb file from TODO. And install it with
+`sudo apt install path/to/sdos_version.deb`.
 
 ## Motivation
 In HPC and other fields of Computer Science, many applications have to be benchmarked.
@@ -20,7 +38,7 @@ On distributed systems using, e.g. `MPI` for communication, the data has to be d
 The C application writes its results or runtimes to some other `.txt` file, which is then `scp`ed back for further analysis or processing.
 Finally, some Python script reads the file again and generates some figures.
 
-There essentially are 3 data transfers between applications.
+Regardless of the specific technologies in use, there essentially are 3 data transfers between applications:
  * input generator -> application
  * main thread -> workers
  * workers -> output processor
@@ -31,7 +49,7 @@ They range from distributed file systems (low level), to proprietary cloud solut
 #### Remaining Problems
 Although there exist good solutions for distributing files, their management still remains tedious.
 Dumping a python dictionary to a file is easy - it can be done in ~3 lines of code.
-Reading the file in C or any other language besides Python becomes hard, since Pythons representation of data is not easily processable by C, without libraries of precise insight of how the data is structured within the file.
+Reading the file in C or any other language besides Python becomes hard, since Pythons representation of data is not easily processable by C, without libraries or precise insight of how the data is structured within the file.
 
 Usually when input is transferred between applications, programmers do not care about **files**, but about the **data** itself.
 

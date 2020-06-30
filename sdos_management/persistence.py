@@ -2,25 +2,26 @@ import uuid
 import time
 import json
 from pathlib import Path
+from cachetools import TTLCache
 
 
 class Persistence:
     __first_call = True
     __store = {}
-
+    __storage_path = "/usr/share/sdos/storage"
     def __init__(self):
-        pass
+        self.__store = TTLCache(maxsize=20, ttl=300)
 
     def __init_storage(self, storage: str):
-        Path('./storage').mkdir(exist_ok=True)
-        if not Path('./storage/ ' + storage + '.json').is_file():
-            with open('./storage/ ' + storage + '.json', 'w') as f:
+        Path(self.__storage_path).mkdir(exist_ok=True)
+        if not Path(self.__storage_path + '/' + storage + '.json').is_file():
+            with open(self.__storage_path + '/' + storage + '.json', 'w') as f:
                 entry = {
                     'created_at': str(int(round(time.time() * 1000))),
                     'data': {},
                 }
                 f.write(json.dumps(entry))
-        with open('./storage/ ' + storage + '.json', 'r') as f:
+        with open(self.__storage_path + '/' + storage + '.json', 'r') as f:
             self.__store[storage] = json.load(f)
             print(self.__store[storage])
 
