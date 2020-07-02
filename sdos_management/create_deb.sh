@@ -74,7 +74,7 @@ printf ". /usr/share/debconf/confmodule\n">> "$CONFIG"
 printf "db_input medium sdos/ipoverride || true\n">> "$CONFIG"
 printf "db_go\n">> "$CONFIG"
 printf "db_get sdos/ipoverride\n">> "$CONFIG"
-printf "echo \"\$RET\" > /usr/share/sdos/override" >> "$CONFIG"
+printf "echo -n \"\$RET\" > /usr/share/sdos/override" >> "$CONFIG"
 
 chown root:root -R "$BASE/$NAME"
 chmod -R 0755 "$BASE/$NAME"

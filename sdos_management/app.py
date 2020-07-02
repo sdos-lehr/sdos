@@ -4,6 +4,7 @@ import json
 import traceback
 import urllib.request
 from typing import Optional
+from pathlib import Path
 
 from flask import Flask, request, render_template
 
@@ -27,6 +28,9 @@ def get_config():
             'cloud_fallback': defaults.getboolean('CloudFallback'),
             'cloud_url': defaults['CloudURL'],
         }
+        if Path('/usr/share/sdos/override').is_file():
+            with open('/usr/share/sdos/override') as f:
+                config['override'] = f.read()
     return config
 
 
@@ -54,22 +58,22 @@ def get_headers() -> dict:
 
 
 def get_data() -> dict:
-    print('calling get_data()')
     if request.is_json:
-        print('request is in json format')
         return dict(request.json)
     else:
-        print('request is NOT in json format')
-        print(request.get_data(True))
         data = json.loads(request.data.decode('utf-8'))
-        print('data:', data)
         return data
 
 
 def get_url(number=0) -> str:
     conf = get_config()
     url = 'http://'
-    if number == 1:
+    if 'override' in conf:
+        number -= 1
+
+    if number == -1:
+        url += conf['override']
+    elif number == 1:
         url += conf['fallback_ip']
     elif number == 2 and conf['cloud_fallback']:
         url += conf['cloud_url']
@@ -81,27 +85,20 @@ def get_url(number=0) -> str:
     for key, val in params.items():
         entries.append(str(key) + '=' + str(val))
     url += '?' + ('&'.join(entries))
-    print(url)
     return url
 
 
 @app.route('/', methods=['POST', 'PUT', 'GET'])
 def invoke():
-    print('called invoke with ' + request.method)
-    print('called invoke on ' + request.url)
     for try_num in range(3):
         try:
             req = urllib.request.Request(url=get_url(try_num), method=request.method, data=request.data,
                                          headers=get_headers())
-            print('created request')
             resp = urllib.request.urlopen(req, timeout=5)
-            print('got response request')
             resp_string = resp.read().decode("utf-8")
             return resp_string
         except:
             traceback.print_exc()
-            print('Exception caught at try', try_num)
-            print(get_url(try_num))
     return 'error'
 
 
@@ -110,30 +107,25 @@ def render_list():
     res = invoke()
     try:
         res = json.loads(res)
-        print(res)
         return render_template('detail.html', item=res)
     except:
         res = ast.literal_eval(res)
-        print(res)
         return render_template('list.html', list=res, col=get_collection_name())
 
 
 @app.route('/manage', methods=['POST', 'PUT'])
 def manage_persist():
-    print('called manage POST')
+    print('called manage POST from', request.remote_addr)
     return pers.persist(get_collection_name(), get_data())
 
 
 @app.route('/manage', methods=['GET'])
 def manage_query():
-    print('called manage GET')
+    print('called manage GET from', request.remote_addr)
     data_id = get_id()
-    print('id: ', data_id)
     if get_load_data() or data_id is not None:
-        print('loading entry by id')
         return pers.retrieve(get_collection_name(), data_id=get_id())
     else:
-        print('loading list')
         return pers.retrieve_list(get_collection_name())
 
 
