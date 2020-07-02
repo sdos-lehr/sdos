@@ -62,7 +62,7 @@ printf "systemctl restart sdos.service\n" >> "$POSTINST"
 TEMPLATES="$BASE/$NAME/DEBIAN/templates"
 printf "Template: sdos/ipoverride\n" >> "$TEMPLATES"
 printf "Type: string\n" >> "$TEMPLATES"
-printf "Default: \"localhost\"\n" >> "$TEMPLATES"
+printf "Default: localhost\n" >> "$TEMPLATES"
 printf "Description: An optional override for the IP address to be used for the SDOS management server.\n" >> "$TEMPLATES"
 printf " Will be stored under /usr/share/sdos/override.\n" >> "$TEMPLATES"
 
