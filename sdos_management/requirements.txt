@@ -1,0 +1,3 @@
+Flask~=1.1.2
+setuptools~=44.1.1
+cachetools~=4.1.1

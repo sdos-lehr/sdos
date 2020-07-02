@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='sdos',
+    name='sdos-management',
     version='0.1',
     packages=[''],
     url='https://github.com/sdos-lehr/sdos',

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='sdos',
-    version='0.1.3',
+    version='0.1.4',
     packages=['sdos'],
     url='https://github.com/sdos-lehr/sdos',
     license='MIT',
@@ -14,4 +14,5 @@ setup(
     description='Python library for easy use of the SDOS API.',
     long_description=long_description,
     long_description_content_type="text/markdown",
+    python_requires='>=3.6',
 )
