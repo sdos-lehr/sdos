@@ -3,7 +3,9 @@ import traceback
 import urllib.request
 
 __port: int = 5006
-
+__headers: dict = {
+    'content-type': 'application/json'
+}
 
 def __get_url(collection: str, id: str = None) -> str:
     if id is None:
@@ -28,7 +30,7 @@ def get(collection: str, id: str, example=None) -> dict:
         example = {}
     example = json.dumps(example).encode('utf-8')
     try:
-        req = urllib.request.Request(url=__get_url(collection, id), data=example, method='GET')
+        req = urllib.request.Request(url=__get_url(collection, id), data=example, method='GET', headers=__headers)
         resp = urllib.request.urlopen(req)
         resp_obj = json.loads(resp.read().decode("utf-8"))
         return resp_obj
@@ -36,12 +38,11 @@ def get(collection: str, id: str, example=None) -> dict:
         traceback.print_exc()
 
 
-def post(collection: str, data:dict, id: str = None) -> str:
+def post(collection: str, data: dict, id: str = None) -> str:
     data = json.dumps(data).encode('utf-8')
     try:
-        req = urllib.request.Request(url=__get_url(collection, id), data=data, method='POST')
+        req = urllib.request.Request(url=__get_url(collection, id), data=data, method='POST', headers=__headers)
         resp = urllib.request.urlopen(req)
-        resp_obj = json.loads(resp.read().decode("utf-8"))
-        return resp_obj
+        return resp.read().decode("utf-8")
     except:
         traceback.print_exc()

@@ -14,13 +14,17 @@ class Persistence:
 
     def __init_storage(self, storage: str):
         Path(self.__storage_path).mkdir(exist_ok=True)
+        print('checking if storage is loaded')
         if not Path(self.__storage_path + '/' + storage + '.json').is_file():
+            print('initializing storage')
             with open(self.__storage_path + '/' + storage + '.json', 'w') as f:
                 entry = {
                     'created_at': str(int(round(time.time() * 1000))),
                     'data': {},
                 }
                 f.write(json.dumps(entry))
+        else:
+            print('storage already loaded')
         with open(self.__storage_path + '/' + storage + '.json', 'r') as f:
             self.__store[storage] = json.load(f)
             print(self.__store[storage])
@@ -31,6 +35,8 @@ class Persistence:
             f.write(json.dumps(self.__store[storage]))
 
     def persist(self, storage: str, data: dict, data_id: str = None) -> str:
+        print('persisting on storage', storage)
+        print('requiring init: ', storage not in self.__store)
         if storage not in self.__store:
             self.__init_storage(storage)
         if data_id is None or data_id == '':

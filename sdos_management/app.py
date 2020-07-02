@@ -54,10 +54,16 @@ def get_headers() -> dict:
 
 
 def get_data() -> dict:
+    print('calling get_data()')
     if request.is_json:
+        print('request is in json format')
         return dict(request.json)
     else:
-        return dict(request.data)
+        print('request is NOT in json format')
+        print(request.get_data(True))
+        data = json.loads(request.data.decode('utf-8'))
+        print('data:', data)
+        return data
 
 
 def get_url(number=0) -> str:
@@ -70,11 +76,12 @@ def get_url(number=0) -> str:
     else:
         url += conf['management_ip']
     url += ':5006/manage'
-    params = dict(request.values)
+    params = request.args.to_dict()
     entries = []
     for key, val in params.items():
         entries.append(str(key) + '=' + str(val))
     url += '?' + ('&'.join(entries))
+    print(url)
     return url
 
 
@@ -86,7 +93,9 @@ def invoke():
         try:
             req = urllib.request.Request(url=get_url(try_num), method=request.method, data=request.data,
                                          headers=get_headers())
-            resp = urllib.request.urlopen(req)
+            print('created request')
+            resp = urllib.request.urlopen(req, timeout=5)
+            print('got response request')
             resp_string = resp.read().decode("utf-8")
             return resp_string
         except:
@@ -111,12 +120,13 @@ def render_list():
 
 @app.route('/manage', methods=['POST', 'PUT'])
 def manage_persist():
+    print('called manage POST')
     return pers.persist(get_collection_name(), get_data())
 
 
 @app.route('/manage', methods=['GET'])
 def manage_query():
-    print('called manage')
+    print('called manage GET')
     data_id = get_id()
     print('id: ', data_id)
     if get_load_data() or data_id is not None:
