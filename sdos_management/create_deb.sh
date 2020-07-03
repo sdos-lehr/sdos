@@ -32,7 +32,6 @@ mkdir "$BASE/$NAME/usr/include"
 cp -r "$BASE/static" "$TARGET"
 cp -r "$BASE/templates" "$TARGET"
 cp "$BASE/dist/static-app" "$TARGET/sdos-management"
-cp "$BASE/config.ini" "$TARGET"
 cp "$BASE/README.md" "$TARGET"
 
 # copy service file
