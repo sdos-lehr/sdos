@@ -10,3 +10,7 @@ for id in ids:
     value = sdos.api.get('writing_demo', id)
     print(value)
     print(value['demo_value'] + 1)
+
+
+# 8:26 : 1
+# 8:27 : 2

@@ -26,7 +26,7 @@ class Persistence:
 
     def __write_to_storage(self, storage: str, data_id: str, data: dict):
         self.__store[storage]['data'][data_id] = data
-        with open('./storage/ ' + storage + '.json', 'w') as f:
+        with open(self.__storage_path + '/' + storage + '.json', 'w') as f:
             f.write(json.dumps(self.__store[storage]))
 
     def persist(self, storage: str, data: dict, data_id: str = None) -> str:
