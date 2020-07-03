@@ -1,16 +1,16 @@
 PROG="sdos"
-VER="0.0-1"
+VER="0.1"
 NAME="${PROG}_$VER"
 BASE=$(dirname "$SCRIPT")
 TARGET="$BASE/$NAME/usr/share/sdos"
 
-# compile the python application
+# compile the python application to a single, statically linked executable
 pyinstaller --hidden-import flask --noconsole --onefile -w -F app.py
 staticx dist/app dist/static-app
 
-# shellcheck disable=SC2115
-rm -r "$BASE/$NAME"
-mkdir "$BASE/$NAME"
+rm -r "${BASE:?}/${NAME:?}"
+rm -f "${BASE:?}/*.deb"
+mkdir "${BASE}/${NAME}"
 
 # create application folder structure
 mkdir "$BASE/$NAME/DEBIAN"
@@ -60,21 +60,22 @@ printf "systemctl restart sdos.service\n" >> "$POSTINST"
 
 # Write .deb templates file
 TEMPLATES="$BASE/$NAME/DEBIAN/templates"
-printf "Template: sdos/ipoverride\n" >> "$TEMPLATES"
+printf "Template: sdos/management-ip\n" >> "$TEMPLATES"
 printf "Type: string\n" >> "$TEMPLATES"
 printf "Default: localhost\n" >> "$TEMPLATES"
-printf "Description: An optional override for the IP address to be used for the SDOS management server.\n" >> "$TEMPLATES"
-printf " Will be stored under /usr/share/sdos/override.\n" >> "$TEMPLATES"
+printf "Description: The IP address to be used for the SDOS management server.\n" >> "$TEMPLATES"
+printf " Will be stored under /usr/share/sdos/management-ip.\n" >> "$TEMPLATES"
 
 # Write .deb config file
 CONFIG="$BASE/$NAME/DEBIAN/config"
 printf "#!/bin/sh -e\n">> "$CONFIG"
 printf "# Source debconf library.\n">> "$CONFIG"
 printf ". /usr/share/debconf/confmodule\n">> "$CONFIG"
-printf "db_input medium sdos/ipoverride || true\n">> "$CONFIG"
+printf "mkdir /usr/share/sdos\n">> "$CONFIG"
+printf "db_input medium sdos/management-ip || true\n">> "$CONFIG"
 printf "db_go\n">> "$CONFIG"
-printf "db_get sdos/ipoverride\n">> "$CONFIG"
-printf "echo -n \"\$RET\" > /usr/share/sdos/override" >> "$CONFIG"
+printf "db_get sdos/management-ip\n">> "$CONFIG"
+printf "echo -n \"\$RET\" > /usr/share/sdos/management-ip" >> "$CONFIG"
 
 chown root:root -R "$BASE/$NAME"
 chmod -R 0755 "$BASE/$NAME"

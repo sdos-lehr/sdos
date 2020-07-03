@@ -212,7 +212,7 @@ send_request(const char *method, const char *data, bool print_debug, const char 
     /* check error */
     if (jerr != json_tokener_success) {
         /* error */
-        fprintf(stderr, "ERROR: Failed to parse json string");
+        fprintf(stderr, "ERROR: Failed to parse json string, jerr: %d", jerr);
         /* free json object */
         json_object_put(json);
         /* return */

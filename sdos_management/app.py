@@ -1,37 +1,26 @@
 import ast
-import configparser
 import json
 import traceback
 import urllib.request
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 from flask import Flask, request, render_template
 
 import persistence
 
 app = Flask(__name__)
-config = None
+ip = None
 pers: persistence.Persistence = persistence.Persistence()
 
 
-def get_config():
-    global config
-    if config is None:
-        parser = configparser.ConfigParser()
-        parser.read('/usr/share/sdos/config.ini')
-        defaults = parser['DEFAULT']
-        config = {
-            'require_auth': defaults.getboolean('RequireAuth'),
-            'management_ip': defaults['ManagementIP'],
-            'fallback_ip': defaults['FallbackIP'],
-            'cloud_fallback': defaults.getboolean('CloudFallback'),
-            'cloud_url': defaults['CloudURL'],
-        }
-        if Path('/usr/share/sdos/override').is_file():
-            with open('/usr/share/sdos/override') as f:
-                config['override'] = f.read()
-    return config
+def get_ip():
+    global ip
+    if ip is None:
+        if Path('/usr/share/sdos/management-ip').is_file():
+            with open('/usr/share/sdos/management-ip') as f:
+                ip = f.read()
+    return ip
 
 
 def get_param(param: str) -> Optional:
@@ -65,21 +54,10 @@ def get_data() -> dict:
         return data
 
 
-def get_url(number=0) -> str:
-    conf = get_config()
-    url = 'http://'
-    if 'override' in conf:
-        number -= 1
+def get_url() -> str:
+    ip = get_ip()
+    url = 'http://' + str(ip) + ':5006/manage'
 
-    if number == -1:
-        url += conf['override']
-    elif number == 1:
-        url += conf['fallback_ip']
-    elif number == 2 and conf['cloud_fallback']:
-        url += conf['cloud_url']
-    else:
-        url += conf['management_ip']
-    url += ':5006/manage'
     params = request.args.to_dict()
     entries = []
     for key, val in params.items():
@@ -90,9 +68,9 @@ def get_url(number=0) -> str:
 
 @app.route('/', methods=['POST', 'PUT', 'GET'])
 def invoke():
-    for try_num in range(3):
+    for try_num in range(2):
         try:
-            req = urllib.request.Request(url=get_url(try_num), method=request.method, data=request.data,
+            req = urllib.request.Request(url=get_url(), method=request.method, data=request.data,
                                          headers=get_headers())
             resp = urllib.request.urlopen(req, timeout=5)
             resp_string = resp.read().decode("utf-8")
