@@ -6,10 +6,13 @@ from pathlib import Path
 from typing import Optional
 
 from flask import Flask, request, render_template
+from flask_cors import CORS, cross_origin
 
 import persistence
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 ip = None
 pers: persistence.Persistence = persistence.Persistence()
 
@@ -67,6 +70,7 @@ def get_url() -> str:
 
 
 @app.route('/', methods=['POST', 'PUT', 'GET'])
+@cross_origin()
 def invoke():
     for try_num in range(2):
         try:
@@ -81,6 +85,7 @@ def invoke():
 
 
 @app.route('/view', methods=['GET'])
+@cross_origin()
 def render_list():
     res = invoke()
     try:
@@ -92,12 +97,14 @@ def render_list():
 
 
 @app.route('/manage', methods=['POST', 'PUT'])
+@cross_origin()
 def manage_persist():
     print('called manage POST from', request.remote_addr)
-    return pers.persist(get_collection_name(), get_data())
+    return pers.persist(get_collection_name(), get_data(), data_id=get_id())
 
 
 @app.route('/manage', methods=['GET'])
+@cross_origin()
 def manage_query():
     print('called manage GET from', request.remote_addr)
     data_id = get_id()

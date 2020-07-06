@@ -5,7 +5,7 @@ BASE=$(dirname "$SCRIPT")
 TARGET="$BASE/$NAME/usr/share/sdos"
 
 # compile the python application to a single, statically linked executable
-pyinstaller --hidden-import flask --noconsole --onefile -w -F app.py
+pyinstaller --hidden-import flask --hidden-import flask-cors --noconsole --onefile -w -F app.py
 staticx dist/app dist/static-app
 
 rm -r "${BASE:?}/${NAME:?}"

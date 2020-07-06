@@ -1,0 +1,12 @@
+<div class="entry-title-wrapper">
+  <h2>Entry: {{collectionID}}/{{entryID}}</h2>
+  <button (click)="addEntry()"
+          mat-mini-fab
+          matTooltip="Create a new entry based on this entry's current fields (even if they are not persisted yet) and change the current view to it.">
+    <mat-icon>add</mat-icon>
+  </button>
+  <button (click)="saveEntry()" [disabled]="changedData === data" mat-mini-fab>
+    <mat-icon>save</mat-icon>
+  </button>
+</div>
+<json-editor (jsonChange)="updateData($event)" [data]="data" [options]="editorOptions"></json-editor>

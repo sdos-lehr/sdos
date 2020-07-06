@@ -1,0 +1,10 @@
+<div class="collection-title-wrapper">
+  <h2>Collection: {{collectionID}}</h2>
+  <button (click)="addEntry()" mat-mini-fab>
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+<mat-list role="list">
+  <mat-list-item *ngFor="let entry of api.lastEntries" [routerLink]="'/collection/' + collectionID + '/' + entry"
+                 role="listitem">{{entry}}</mat-list-item>
+</mat-list>

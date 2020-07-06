@@ -1,0 +1,17 @@
+<mat-form-field>
+  <mat-label>Input</mat-label>
+  <input [(ngModel)]="collectionName" matInput>
+</mat-form-field>
+<button (click)="addCollection(collectionName)" aria-label="Example icon button with a delete icon" color="primary"
+        mat-fab>
+  <mat-icon>save</mat-icon>
+</button>
+<button (click)="clearCollections()" [matTooltip]="'clear localstorage cache'" aria-label="Example icon button with a delete icon" color="primary"
+        mat-fab>
+  <mat-icon>delete</mat-icon>
+</button>
+
+<mat-list role="list">
+  <mat-list-item *ngFor="let col of collections" [routerLink]="'/collection/' + col"
+                 role="listitem">{{col}}</mat-list-item>
+</mat-list>

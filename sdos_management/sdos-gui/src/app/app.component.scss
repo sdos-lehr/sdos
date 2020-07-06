@@ -1,0 +1,25 @@
+:host {
+  width: 100%;
+}
+
+.content {
+  margin: 10px;
+  height: 80%;
+}
+
+router-outlet {
+  height: 100%;
+}
+
+button {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  margin-right: 10px;
+}
+
+:host ::ng-deep json-editor .jsoneditor,
+:host ::ng-deep json-editor > div,
+:host ::ng-deep .jsoneditor-outer {
+  height: 100%;
+}

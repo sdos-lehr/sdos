@@ -1,0 +1,21 @@
+json-editor {
+  min-height: 90%;
+
+  div {
+    min-height: 90%;
+  }
+}
+
+.entry-title-wrapper {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+  h2 {
+    margin: 0;
+  }
+
+  button {
+    margin-left: 10px;
+  }
+}
+
