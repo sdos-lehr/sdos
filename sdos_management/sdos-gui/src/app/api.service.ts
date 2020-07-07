@@ -9,7 +9,7 @@ export class ApiService {
   public lastCollection: string;
   public lastEntries: string[];
   public baseEntry: any = undefined;
-  private base: string = 'http://localhost:5006/?collection=';
+  private base: string = 'http://' + window.location.host + '/?collection=';
   private options: { headers: { "content-type": string }} = {
     headers: {
       'content-type': 'application/json'

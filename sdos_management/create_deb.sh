@@ -1,5 +1,5 @@
 PROG="sdos"
-VER="0.1"
+VER="0.2"
 NAME="${PROG}_$VER"
 BASE=$(dirname "$SCRIPT")
 TARGET="$BASE/$NAME/usr/share/sdos"

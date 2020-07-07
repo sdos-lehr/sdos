@@ -5,12 +5,12 @@ import urllib.request
 from pathlib import Path
 from typing import Optional
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
 
 import persistence
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='/usr/share/sdos/static')
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 ip = None
@@ -72,6 +72,13 @@ def get_url() -> str:
 @app.route('/', methods=['POST', 'PUT', 'GET'])
 @cross_origin()
 def invoke():
+    try:
+        agent = request.headers.get('User-Agent')
+        if 'mozilla' in agent.lower() and (not request.args or len(request.args) == 0):
+            print('returning index.html')
+            return send_from_directory(app.static_folder, 'index.html')
+    except:
+        traceback.print_exc()
     for try_num in range(2):
         try:
             req = urllib.request.Request(url=get_url(), method=request.method, data=request.data,
@@ -82,18 +89,6 @@ def invoke():
         except:
             traceback.print_exc()
     return 'error'
-
-
-@app.route('/view', methods=['GET'])
-@cross_origin()
-def render_list():
-    res = invoke()
-    try:
-        res = json.loads(res)
-        return render_template('detail.html', item=res)
-    except:
-        res = ast.literal_eval(res)
-        return render_template('list.html', list=res, col=get_collection_name())
 
 
 @app.route('/manage', methods=['POST', 'PUT'])
@@ -112,6 +107,16 @@ def manage_query():
         return pers.retrieve(get_collection_name(), data_id=get_id())
     else:
         return pers.retrieve_list(get_collection_name())
+
+
+@app.route('/<path:path>', methods=['GET'])
+@cross_origin()
+def static_proxy(path: str):
+    if path.endswith('favicon.ico'):
+        return send_from_directory(app.static_folder, 'favicon.ico')
+    if not Path(app.static_folder + '/' + path).is_file():
+        return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, path)
 
 
 if __name__ == '__main__':
